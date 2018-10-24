@@ -1,0 +1,213 @@
+<div id="info">
+	<button class="btn btn-success btn-sm addBtn">新 增</button>
+	<button class="btn btn-success btn-sm detachDelBtn">批量删除</button>
+	<table class="table table-bordered table-striped">
+		<tr class="text-center">
+			<td>编号</td>
+			<td>文章标题</td>
+			<td>所属栏目</td>
+			<td>背景音乐</td>
+			<td>作者</td>
+			<td>发布时间</td>
+			<td>阅读次数</td>
+			<td>操作</td>
+		</tr>
+		<tr class="text-center">
+			<td><input type="checkbox" value="1001"></td>
+			<td>标题</td>
+			<td>栏目</td>
+			<td>音乐</td>
+			<td></td>
+			<td>时间</td>
+			<td>次数</td>
+			<td>
+				<i class="iconfont icon-edit-1-copy" title="修改"></i>
+				<i class="iconfont icon-shanchu" title="删除"></i>
+			</td>
+		</tr>
+	</table>
+	<div class="modal" id="info-modal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<div class="backDiv">
+						<i class="iconfont icon-zuo"></i>
+						<span>返回</span>
+					</div>
+					<div class="modal-title text-center">发布讯息</div>
+				</div>
+				<div class="modal-body">
+					<form class="form">
+						<div class="form-group">
+							<label for="">标题</label>
+							<input name="infoTitle" type="text" class="form-control">
+						</div>
+						<div class="form-group">
+							<label for="">所属栏目</label>
+							<select name="infoCategory" class="form-control"></select>
+						</div>
+						<div class="form-group">
+							<label for="">列表样式</label>
+							<div class="row">
+								<div class="col-sm-4"><img src="images/头像1.jpg" width="30%" alt="" class="img-rounded"></div>
+								<div class="col-sm-4"><img src="images/图层 0.png" width="30%" alt="" class="img-rounded"></div>
+								<div class="col-sm-4"><img src="images/c1.jpg" width="30%" alt="" class="img-rounded"></div>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="">列表缩略图</label>
+							<button class="btn btn-success btn-sm form-control upload" style="font-size: 18px">点 击 上 传</button>
+						</div>
+						<div class="form-group">
+							<label for="">正文</label>
+							<textarea name="infoWen"cols="15" rows="5" class="form-control"></textarea>
+						</div>
+						<div class="form-group hide">
+							<button type="reset">充值</button>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<span class="messageSpan"></span>
+					<button class="btn btn-success confirmBtn">确 认</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	$(function(){
+		$('.modal-content').height($(window).height())
+		// 新增
+		$('.addBtn').click(function(){
+			// 清空messageSpan
+			$('.messageSpan').html('');
+			// 模拟trigger点击
+			$('button[type=reset]').trigger('click');
+			addOption();
+		})
+		// 保存
+		$('.confirmBtn').click(function(){
+
+		})
+		// 返回
+		$('.backDiv').click(function(){
+			$('#info-modal').fadeOut(500);
+		})
+		// 修改
+
+		// 删除
+		$('#info table').on({
+			click:function(){
+				var id = $(this).closest('tr').find('[type=checkbox]').val();
+				var obj = {
+					id:id,
+				}
+				$.get(baseURL+'/manager/article/deleteArticleById',obj,function(res){
+					if (res.status==200) {
+						alert('删除成功')
+						console.log(res.status)
+						// console.log(res.message)
+						loadData();
+					}else{
+						alert('删除失败')
+						console.log(res.message)
+					}
+				})
+			}
+		},'[title=删除]')
+
+		// 批量删除
+		$('.detachDelBtn').click(function(){
+			var ids = $('input[type=checkbox]:checked').map(function(index,item){
+				return $(item).val();
+			}).get();
+			var obj = {
+				ids:ids.toString()
+			}
+			$.post(baseURL+'/manager/article/batchDeleteArticle',obj,function(res){
+				if (res.status==200) {
+					alert('删除成功');
+					console.log(res.status)
+					loadData();
+				}else{
+					alert('删除失败')
+					console.log(res.message)
+				}
+			})
+		})
+
+		// 追加option到select,显示模态框
+		function addOption(){
+			$('#info select option:not:(:first)').remove();
+			$.get(baseURL+'/manager/article/findArticle',obj,function(res){
+				var obj = {
+					page:0,
+					pageSize:10,
+				}
+				var categorys = res.data;
+				categorys.forEach(function(item){
+					var $option = $('<option value="'+item.id+'">'+item.name+'</option>');
+					$('#info select').append($option);
+				})
+			$('#info-modal').fadeIn(500);
+			});
+		}
+		loadData();
+		function loadData(){
+			$('.table tr:not(:first)').remove();
+			var obj = {
+				page:0,
+				pageSize:10
+			}
+			$.get(baseURL+'/manager/article/findArticle',obj,function(res){
+				res.data.list.forEach(function(item,index){
+					var $tr = $(`<tr class="text-center">
+									<td><input type="checkbox" value="`+item.id+`"></td>
+									<td>`+item.title+`</td>
+									<td>`+(item.category?item.category:'-')+`</td>
+									<td>`+(item.music?item.music:'-')+`</td>
+									<td>`+(item.author?item.author:'-')+`</td>
+									<td>`+(item.publishtime?item.publishtime:'-')+`</td>
+									<td>`+(item.readtimes?item.readtimes:'-')+`</td>
+									<td>
+										<i class="iconfont icon-edit-1-copy" title="修改"></i>
+										<i class="iconfont icon-shanchu" title="删除"></i>
+									</td>
+								</tr>`)
+					$('#info .table ').append($tr)
+				})
+			})
+		}
+	})
+</script>
+<style>
+	#info{
+		padding: 10px;
+		width: 98%;
+		margin: 0 auto;
+		background-color: white;
+	}
+	#info .table{
+		margin-top: 10px;
+	}
+	#info .table i{
+		color: green;
+		font-size: 20px;
+		cursor:pointer;
+	}
+	#info .table i:last-child{
+		color: red;
+	}
+	.modal{
+		background-color: rgba(159,159,159,0.3);
+	}
+	.backDiv{
+		float: left;
+		cursor:pointer;
+	}
+	.modal-dialog{
+		margin-top: 0;
+		margin-right: 0;
+	}
+</style>

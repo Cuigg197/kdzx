@@ -1,0 +1,167 @@
+<div id="category">
+	<!-- 栏目管理页面 -->
+	<button class="btn btn-success addBtn">新 增</button>
+	<button class="btn btn-success removeBtns">批量删除</button>
+	<table class="myTable table table-bordered table-striped">
+		<tr>
+			<th class="col-sm-1 text-center">编号</th>
+			<th class="col-sm-2 text-center">栏目名称</th>
+			<th class="col-sm-3 text-center">父栏目</th>
+			<th class="col-sm-5 text-center">描述</th>
+			<th class="col-sm-1 text-center">操作</th>
+		</tr>
+		<!-- <tr class="text-center">
+			<td><input type="checkbox"></td>
+			<td>s</td>
+			<td>s</td>
+			<td>2</td>
+			<td>3</td>
+		</tr> -->
+	</table>
+	<!-- 模态框 -->
+	<div class="modal" id="categoryModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header text-center">
+					<div class="backDiv">
+						<i class="iconfont icon-zuo"></i>
+						<span>返回</span>
+					</div>
+					<div class="modal-title">添加用户</div>
+				</div>
+				<div class="modal-body">
+					<form class="form">
+						<div class="form-group">
+							<label for="">栏目名称</label>
+							<input type="text" name="categoryName" class="form-control">
+						</div>
+						<div class="form-group">
+							<label for="">父栏目</label>
+							<select class="form-control" name="parent">
+								<option value=""></option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="">描述</label>
+							<textarea cols="30" rows="10" class="form-control" name="Dec"></textarea>
+						</div>
+						<div class="form-group hide">
+							<button type="reset">重置</button>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<span class="messageSpan"></span>
+					<button class="btn btn-success confirmBtn">确 认</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	$(function(){
+		// 普通删除
+		
+		// 给.modal-content设置高度
+		$('.modal-content').height($(window).height());
+		// 按钮绑定模态框出现，隐藏 
+		$('.addBtn').click(function(){
+			$('.messageSpan').empty();
+			$('#categoryModal').fadeIn(400);
+			// 模拟点击重置
+			$('button[type=reset]').trigger('click')
+		})
+		$('.backDiv').click(function(){
+			$('#categoryModal').fadeOut(400);
+		})
+		// 给确认按钮绑定事件
+		$('.confirmBtn').click(function(){
+			var categoryName = $('input[name=categoryName]').val();
+			var parent = $('select[name=parent]').val();
+			var Dec = $('textarea[name=Dec]').val();
+			var message = '';
+			if (categoryName&&Dec&&parent) {
+				var obj = {
+					// id:id,
+					name:categoryName,
+					comment:Dec,
+					// no:no,
+					// parentId:parent,
+				};
+				$.post(baseURL+'/manager/category/saveOrUpdateCategory',obj,function(res){console.log('保存成功')})
+				$('#categoryModal').fadeOut(400);
+			}else{
+				message = '请输入完整信息'
+			}
+			$('.messageSpan').html(message)
+		})
+		loadData();
+		// removeData();
+		function loadData(){
+			console.log(baseURL,'----');
+			$.get(baseURL+'/manager/category/findAllCategory',function(res){
+				console.log(res.data);
+				res.data.forEach(function(item,index){
+					var $thm = $(`
+						<tr class="text-center">
+							<td><input type="checkbox"/>`+(item.id)+`</td>
+							<td>`+(item.name)+`</td>
+							<td>`+(item.parent?parent:'-')+`</td>
+							<td>`+(item.comment)+`</td>
+							<td><button class="btn btn-danger removeBtn">删除</button></td>
+						</tr>
+					`);
+					// 追加节点
+					$('.myTable').append($thm);
+				})
+			})
+		}
+		// function removeData(){
+		// 	console.log(baseURL,'----');
+		// 	$.get(baseURL+'/manager/category/deleteCategoryById',function(res){
+		// 		// console.log(res.data);
+		// 	})
+		// }
+
+	})
+</script>
+<style>
+	#category{
+		width: 98%;
+		margin: 0 auto;
+		background-color: white;
+		padding: 10px;
+		border-radius: 5px;
+	}
+	.myTable{
+		margin-top: 10px;
+	}
+	#categoryModal{
+		/*display: block;*/
+		background-color: rgba(159,159,159,0.3);
+	}
+	.modal-dialog{
+		margin-top: 0;
+		margin-right: 0;
+		width: 25%
+	}
+	.modal-content{
+		padding-left: 15px;
+		padding-right: 15px;
+	}
+	.modal-body{
+		font-size: 20px;
+	}
+	.backDiv{
+		position: absolute;
+		top: 15px;
+		left: 10px;
+		cursor: pointer;
+	}
+	.messageSpan{
+		color: red;
+	}
+</style>
